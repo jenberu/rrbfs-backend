@@ -1,11 +1,13 @@
 
 from pathlib import Path
-
+from decouple import config
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+DEBUG = config('DEBUG', default=False, cast=bool)
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-o^r3&3e4wko)7d_l2%obnvpy$6$7hzx6g98vbo51gz^8u#c%7x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -13,13 +15,30 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 # Application definition
 INSTALLED_APPS = [
+    #3rd party apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'cloudinary',
+    'cloudinary_storage',
+    # Local apps
+    'accounts',
+    'documents',
 ]
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,10 +73,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(default=config("DATABASE_URL"),
+                                      conn_max_age=600,
+        ssl_require=True
+                                      )
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dt5flugpd',
+    'API_KEY': '331528896826119',
+    'API_SECRET': 'DE65rd9Rza-YMt4Z9TrporWGSQE',
 }
 
 

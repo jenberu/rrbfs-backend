@@ -1,7 +1,14 @@
-env/
-venv/
-ENV/
-.venv/
-.ENV
+
 
 .env
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files
+.env
+*.env
+.venv/
+venv/
+env/

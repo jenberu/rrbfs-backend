@@ -1,9 +1,6 @@
 from django.db import models
 from accounts.models import CustomUser, Department
-
-def upload_path(instance, filename):
-    return f"{instance.department.name}/{filename}"
-
+from cloudinary_storage.storage import MediaCloudinaryStorage
 class Document(models.Model):
     CATEGORY_CHOICES = [
     ('policy', 'Policy'),
@@ -21,7 +18,12 @@ class Document(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='report')
-    file = models.FileField(upload_to=upload_path)
+    file = models.FileField(
+        upload_to='documents/',
+        blank=True,
+        null=True,
+        storage=MediaCloudinaryStorage()  
+    )    
     uploaded_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     uploaded_at = models.DateTimeField(auto_now_add=True)

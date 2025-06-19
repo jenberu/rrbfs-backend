@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from .models import Department
 
 User = get_user_model()
 
@@ -22,8 +23,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ['id', 'name']
 
 class UserSerializer(serializers.ModelSerializer):
+    department = DepartmentSerializer()
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'role', 'department')
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'department','date_joined', 'last_login']

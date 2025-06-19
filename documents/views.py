@@ -5,23 +5,56 @@ from django.shortcuts import get_object_or_404
 from .models import Document
 from .serializers import DocumentSerializer
 from accounts.permissions import IsAdmin, IsHR, IsEmployee, IsOwnerOrDepartmentHR
+from rest_framework.parsers import MultiPartParser, FormParser
+import logging
+logger = logging.getLogger(__name__)
 
-
-# Upload a new document (Employee, HR, or Admin)
 class DocumentUploadView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        serializer = DocumentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(
-                uploaded_by=request.user,
-                department=request.user.department
-            )
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data  # ✅ DO NOT use .copy()
+
+        try:
+            # Prepare mutable data dictionary for serializer
+            serializer_data = {
+                'name': data.get('name'),
+                'description': data.get('description'),
+                'category': data.get('category'),
+                'uploaded_by_id': user.id,
+                'file': data.get('file'),
+            }
+
+            # Set department ID
+            if user.role != 'ADMIN':
+                if not hasattr(user, 'department') or not user.department:
+                    return Response(
+                        {"error": "Non-admin users must have a department assigned."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                serializer_data['department_id'] = user.department.id
+            else:
+                if 'department' not in data:
+                    return Response(
+                        {"error": "Department is required for admin uploads."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                serializer_data['department_id'] = int(data.get('department'))
+
+            # Validate and save
+            serializer = DocumentSerializer(data=serializer_data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+        except Exception as e:
+            print(f"Error during document upload: {e}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 # List documents available to the user based on role
 class DocumentListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -33,7 +66,7 @@ class DocumentListView(APIView):
         elif user.is_hr():
             documents = Document.objects.filter(department=user.department)
         elif user.is_employee():
-            documents = Document.objects.filter(department=user.department, uploaded_by=user)
+            documents = Document.objects.filter(department=user.department)
         else:
             return Response({"detail": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -52,14 +85,37 @@ class DocumentDetailView(APIView):
         serializer = DocumentSerializer(document)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-# Optional: Delete a document (only admin or owner)
 class DocumentDeleteView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrDepartmentHR]
-
-    def delete(self, request, pk):
-        document = get_object_or_404(Document, pk=pk)
-        self.check_object_permissions(request, document)
-
-        document.delete()
-        return Response({"detail": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    permission_classes = [permissions.IsAuthenticated]
+    def delete(self, request, *args, **kwargs):
+        try:
+            document_ids = request.data.get('ids', [])
+            
+            if not document_ids:
+                return Response(
+                    {"error": "No document IDs provided"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            # Verify the user has permission to delete these documents
+            documents = Document.objects.filter(
+                id__in=document_ids,
+                uploaded_by=request.user  # Only allow deleting own documents
+            )
+        
+            count, _ = documents.delete()
+            
+            return Response(
+                {"message": f"Successfully deleted {count} documents"},
+                status=status.HTTP_200_OK
+            )
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+class TotalDocumentsView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+    def get(self, request):
+        total_documents = Document.objects.count()
+        return Response({"total": total_documents})       

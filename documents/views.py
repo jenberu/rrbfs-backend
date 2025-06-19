@@ -15,7 +15,7 @@ class DocumentUploadView(APIView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        data = request.data  # ✅ DO NOT use .copy()
+        data = request.data  
 
         try:
             # Prepare mutable data dictionary for serializer

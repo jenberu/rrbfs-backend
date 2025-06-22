@@ -15,7 +15,9 @@ class CustomUser(AbstractUser):
     )
     role = models.CharField(max_length=10, choices=ROLES, default='EMPLOYEE')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
-    
+    class Meta:
+        ordering = ['-date_joined']
+       
     def is_admin(self):
         return self.role == 'ADMIN'
     

@@ -1,6 +1,7 @@
 from django.db import models
 from accounts.models import CustomUser, Department
 from cloudinary_storage.storage import MediaCloudinaryStorage
+
 class Document(models.Model):
     CATEGORY_CHOICES = [
     ('policy', 'Policy'),
@@ -28,6 +29,8 @@ class Document(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['-uploaded_at']
 
     def __str__(self):
         return self.name

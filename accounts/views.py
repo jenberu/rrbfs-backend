@@ -14,6 +14,7 @@ class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        print("RegisterView called with data:", request.data)  # Debugging line
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -85,3 +86,17 @@ class TotalUsersView(APIView):
     def get(self, request):
         total_users = User.objects.count()
         return Response({"total": total_users})    
+class DeleteUsersAPIView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def delete(self, request):
+        ids = request.data.get("ids", [])
+        if not ids:
+            return Response({"detail": "No IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        users = User.objects.filter(id__in=ids)
+        deleted_count = users.count()
+        users.delete()
+
+        return Response({"message": f"{deleted_count} user(s) deleted successfully."}, status=status.HTTP_200_OK)    
+

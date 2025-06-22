@@ -26,12 +26,17 @@ This is the backend API for the **Role-Based File Sharing System**, built with *
 ## 📁 Project Structure
 
 ![alt text](image.png)
+
 ![alt text](image-1.png)
 
 ├── accounts/ # Custom user model, departments
+
 ├── documents/ # File upload model and views
+
 ├── config/ # project configuration
+
    ├── settings.py # App settings and installed apps
+
     ├── urls.py # API routing
 
 ## ⚙️ Setup Instructions
@@ -45,9 +50,13 @@ This is the backend API for the **Role-Based File Sharing System**, built with *
 ### Installation
 
 git clone https://github.com/jenberu/rrbfs-backend.git
+
 cd role-based-file-sharing-backend
+
 python -m venv env
+
 source env/bin/activate   # On Windows: env\Scripts\activate
+
 pip install -r requirements.txt
 
 Run Development Server

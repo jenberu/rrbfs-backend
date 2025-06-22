@@ -16,7 +16,13 @@ ALLOWED_HOSTS = ['*']
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "rrbfs-backend-production.up.railway.app",
+
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://rrbfs-backend-production.up.railway.app",
+]
+
 
 # Application definition
 INSTALLED_APPS = [

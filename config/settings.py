@@ -10,16 +10,21 @@ SECRET_KEY = config('SECRET_KEY')
 
 ALLOWED_HOSTS = ['*']
 CORS_ALLOWED_ORIGINS = [
+        'https://rbfss.onrender.com',
+
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "rrbfs-backend-production.up.railway.app",
-    "role-based-file-sharing-system-production.up.railway.app",
+    "https://rrbfs-backend-production.up.railway.app",
+    'https://rrbfs-backend.onrender.com',
+    "https://role-based-file-sharing-system-production.up.railway.app",
 
 ]
 CSRF_TRUSTED_ORIGINS = [
+    'https://rbfss.onrender.com',
     "https://rrbfs-backend-production.up.railway.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    'https://rrbfs-backend.onrender.com',
     "https://role-based-file-sharing-system-production.up.railway.app",
     
 ]
